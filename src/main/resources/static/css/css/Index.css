@@ -1,0 +1,100 @@
+body {
+	margin: 0;
+	min-height: 100vh;
+	min-height: 100dvh;
+    background-image: url('../images/indexFinal.png');
+    background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-attachment: fixed;
+	
+    ffont-family: 'Alike', serif;
+}
+
+/* ---------- HERO SECTION ---------- */
+.hero {
+   display: flex;                
+   justify-content: center;     
+   align-items: center;           
+   text-align: center;
+   padding-top: 10vh;
+}
+
+
+/* ---------- HERO CONTENT ---------- */
+.hero-content {
+   display: flex;
+   flex-direction: column;  
+   gap: 20px;               
+}
+
+
+.hero-content h1 {
+   font-size: 4rem;  
+   font-family: 'Poppins', sans-serif; 
+   font-weight: bold;
+   color: white;
+   margin: 0;
+}
+.hero-content p {
+   font-size: 1.5rem;
+   color: #f5f5f5;
+   margin: 0;
+}
+
+
+/* ---------- BUTTONS ---------- */
+.button-group {
+   margin-top: 40vh;
+   display: flex;
+   justify-content: center;
+   gap: 15vh; 
+}
+.modernButton {
+   padding: 12px 24px;
+   background-color: rgb(24,80,48);
+   color: #ffffff;
+   text-decoration: none;
+   border-radius: 20px;
+   border: 2px solid rgb(60,200,100);
+   transition: background-color 0.3s ease;
+}
+.modernButton:hover {
+   background-color: rgb(36,110,66);
+   border-color: rgb(80,220,120);
+}
+
+/* ......................................................................................*/
+@media screen and (max-width: 768px) { 
+   .hero {
+       padding-top: 15vh;  
+   }
+
+   .hero-content {
+       gap: 15px; 
+   }
+
+   .hero-content h1 {
+       font-size: 3rem;  
+   }
+   .hero-content p {
+       font-size: 1.5rem;   
+   }
+  
+   .button-group {
+       margin-top: 31vh;    
+       flex-direction: column;  
+       gap: 10px;         
+   }
+   .modernButton {
+       padding: 10px 10px;  
+       border-radius: 20px; 
+       font-size: 1.1rem;     
+   }
+
+   body {
+       background-image: url('../images/mobileIndex.png'); 
+       
+   }
+}
+

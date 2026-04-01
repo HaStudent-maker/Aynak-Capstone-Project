@@ -1,0 +1,185 @@
+body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-image: url('../images/bgLoginSignup.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    font-family: 'Alike', serif;
+}
+
+/* ---------- PAGE WRAPPER ---------- */
+.signup-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+	margin:0;
+	padding:0;
+}
+
+/* ---------- TAGLINE ---------- */
+/* .tagline {
+    color: white;
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+} */
+
+/* ---------- CARD ---------- */
+.signup-card {
+    padding-right: 7vh;
+    padding-left: 7vh;
+    padding-top: 1.5vh;
+    padding-bottom: 0.5vh;
+    margin-top: 0vh;
+    width: 60vh;
+
+    border-radius: 30px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(6px);
+}
+
+/* ---------- TITLE ---------- */
+.signup-title {
+    font-size: 1.5rem;
+    color: white;
+    margin-top: 0;
+    margin-bottom: 3vh;
+}
+
+/* ---------- GOOGLE BUTTON ---------- */
+.google-btn {
+    font-size: 0.7rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 25px;
+    border: none;
+    background: white;
+    cursor: pointer;
+}
+
+.google-btn img {
+    width: 20px;
+}
+
+/* ---------- DIVIDER ---------- */
+.divider {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 20px 0;
+}
+
+/* ---------- FORM ---------- */
+.signup-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.signup-card input {
+    font-size: 0.7rem;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: transparent;
+    color: white;
+}
+
+.signup-card input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* ---------- SIGNUP BUTTON ---------- */
+.signup-btn {
+    font-size: 0.9rem;
+    font-family: 'Alike', serif;
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 25px;
+    border: 2px solid rgb(60, 200, 100);
+    background-color: rgb(24, 80, 48);
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.signup-btn:hover {
+    background-color: rgb(36, 110, 66);
+    border-color: rgb(80, 220, 120);
+}
+
+/* ---------- LOGIN LINK ---------- */
+.login-text {
+    font-size: 0.7rem;
+    margin-top: 20px;
+    color: white;
+}
+
+.login-text a {
+    color: rgb(80, 200, 120);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* ......................................................................................*/
+@media screen and (max-width: 768px) {
+   body {
+       background-image: url('../images/mobileLoginSignup.png');
+   }
+   .signup-page {
+       padding: 4vh 2vh;
+   }
+   /*  hiding tagline TO AVOID scroll */
+   .tagline {
+       display: none;
+   }
+   .signup-card {
+       margin-top: 8vh;
+       width: 70vw;
+       padding-left: 12vw;
+       padding-right: 12vw;
+       padding-top: 2vh;
+       padding-bottom: 1.5vh;
+       background: rgba(0, 0, 0, 0.45);
+       border: 1px solid rgba(255, 255, 255, 0.2);
+       backdrop-filter: blur(5px);
+       border-radius: 20px;
+   }
+   .signup-title {
+       font-size: 1.3rem;
+       margin-bottom: 6vh;
+   }
+   .google-btn {
+       font-size: 0.7rem;
+       padding: 10px;
+       gap: 8px;
+   }
+   .divider {
+       font-size: 0.7rem;
+       margin: 14px 0;
+   }
+   .signup-card form {
+       gap: 6px;
+   }
+   .signup-card input {
+       font-size: 0.7rem;
+       padding: 10px;
+   }
+   .signup-btn {
+       font-size: 0.8rem;
+       padding: 10px;
+       border-radius: 20px;
+   }
+   .login-text {
+       font-size: 0.65rem;
+       margin-top: 16px;
+   }
+}

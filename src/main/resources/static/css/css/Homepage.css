@@ -1,0 +1,216 @@
+/* ================= GLOBAL ================= */
+body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-image: url('../images/mobileLoginSignup.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    font-family: 'Alike', serif;
+}
+
+/* ================= NAVBAR ================= */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 40px;
+    background: white;
+
+    /* position: sticky;
+    top: 0;
+    z-index: 1000; */
+}
+
+.nav-left .logo {
+    width: 57px;
+    height: 50px;
+}
+
+.nav-center {
+    display: flex;
+    gap: 40px;
+}
+
+.nav-center a {
+    text-decoration: none;
+    color: black;
+    font-size: 0.9rem;
+}
+
+.nav-center a.active {
+    font-weight: bold;
+}
+
+.nav-right {
+    display: flex;
+    gap: 15px;
+}
+
+.icon-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgb(80, 200, 120);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 6px;              
+    box-sizing: border-box;
+
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.icon-circle:hover {
+    transform: scale(1.05);
+}
+
+
+/* MOBILE SEARCH ICON (HIDDEN BY DEFAULT) */
+.nav-mobile-search {
+    display: none;
+}
+
+.nav-mobile-search img {
+    width: 24px;
+}
+
+
+
+/* ================= PAGE ================= */
+.home-page {
+    padding: 40px;
+}
+
+/* ================= WELCOME ================= */
+.welcome-card {
+    padding: 18px 30px;
+    border-radius: 20px;
+    background: rgba(24, 80, 48, 0.85);
+    border: 2px solid rgb(60, 200, 100);
+    color: white;
+    margin-bottom: 30px;
+}
+
+.welcome-card span {
+    font-weight: bold;
+}
+
+.welcome-card img {
+    /*display: block;
+    margin: 12px auto 0;
+	margin-top:0px;*/
+	/*display: inline;*/
+    width: 40px; 
+	
+}
+
+
+/* ================= SECTIONS ================= */
+.section-title {
+    color: white;
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+}
+
+/* ================= MAP ================= */
+.map-section {
+    margin-bottom: 40px;
+}
+
+.map-card {
+    padding: 15px;
+    border-radius: 25px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(6px);
+}
+
+.map-card img {
+    width: 100%;
+    border-radius: 15px;
+}
+
+/* ================= POSTS ================= */
+.posts-section {
+    margin-bottom: 60px;
+}
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.post-card {
+    padding: 10px;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(6px);
+}
+
+.post-card img {
+    width: 100%;
+    border-radius: 15px;
+}
+
+
+/* ================= MOBILE ================= */
+@media screen and (max-width: 768px) {
+	
+   /* TOP NAV */
+   .nav-center,
+   .nav-right {
+       display: none;
+   }
+   .nav-mobile-search {
+       display: block;
+   }
+   .navbar {
+       padding: 12px 16px;
+   }
+   /* PAGE */
+   .home-page {
+       padding-left: 16px;
+       padding-right: 16px;
+       padding-bottom: 80px; /* must be >= bottom nav height */
+   }
+   /* BOTTOM NAV */
+   .mobile-bottom-nav {
+       position: fixed;
+       bottom: 0;
+       left: 0;
+       width: 100%;
+       height: 60px; 
+       background: white;
+       display: flex;
+       justify-content: space-around;
+       align-items: center;
+       border-top: 1px solid #ddd;
+       z-index: 1000;
+   }
+   .mobile-bottom-nav img {
+       width: 26px; 
+       height: auto;
+       cursor: pointer;
+   }
+   
+   .posts-grid {
+          grid-template-columns: 1fr;
+          gap: 16px;
+      }
+      .post-card img {
+          width: 100%;
+          height: auto;
+      }
+      /* OPTIONAL */
+      .posts-section {
+          margin-bottom: 20px;
+      }
+}
