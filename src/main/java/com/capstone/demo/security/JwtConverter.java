@@ -19,24 +19,21 @@ import java.util.stream.Stream;
 @Component
 public class JwtConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
-    private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter =
-            new JwtGrantedAuthoritiesConverter();
-
+    private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
     private final JwtConverterProperties properties;
-    private final KeycloakSyncService keycloakSyncService; // 🔥 ADD THIS
+    private final KeycloakSyncService keycloakSyncService;
 
-    public JwtConverter(JwtConverterProperties properties,
-                        KeycloakSyncService keycloakSyncService) { // 🔥 ADD THIS
+    public JwtConverter(JwtConverterProperties properties, KeycloakSyncService keycloakSyncService) { 
         this.properties = properties;
         this.keycloakSyncService = keycloakSyncService;
     }
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
-
-        // 🔥 SYNC USER TO DATABASE
+        // Sync user data with Keycloak
         keycloakSyncService.syncFromKeycloak(jwt);
 
+        // Extract roles and add to authorities
         Collection<GrantedAuthority> authorities = Stream.concat(
                 jwtGrantedAuthoritiesConverter.convert(jwt).stream(),
                 extractResourceRoles(jwt).stream()
@@ -54,14 +51,12 @@ public class JwtConverter implements Converter<Jwt, AbstractAuthenticationToken>
     }
 
     private Collection<? extends GrantedAuthority> extractResourceRoles(Jwt jwt) {
-
+        // Extract roles from JWT resource_access claim
         Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
         Map<String, Object> resource;
         Collection<String> resourceRoles;
 
-        if (resourceAccess == null
-                || (resource = (Map<String, Object>) resourceAccess.get(properties.getResourceId())) == null
-                || (resourceRoles = (Collection<String>) resource.get("roles")) == null) {
+        if (resourceAccess == null || (resource = (Map<String, Object>) resourceAccess.get(properties.getResourceId())) == null || (resourceRoles = (Collection<String>) resource.get("roles")) == null) {
             return Set.of();
         }
 

@@ -1,93 +1,106 @@
 package com.capstone.demo.security;
 
-import com.capstone.demo.model.Users;
 import com.capstone.demo.model.MunicipalOfficer;
 import com.capstone.demo.model.Sponsor;
-import com.capstone.demo.ropositary.UserRepository;
+import com.capstone.demo.model.Users;
 import com.capstone.demo.ropositary.MunicipalOfficerRepository;
 import com.capstone.demo.ropositary.SponsorRepository;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.capstone.demo.ropositary.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class KeycloakSyncService {
 
-    @Autowired
-    private UserRepository userRepo;
+    private final UserRepository usersRepository;
+    private final SponsorRepository sponsorRepository;
+    private final MunicipalOfficerRepository officerRepository;
 
-    @Autowired
-    private MunicipalOfficerRepository officerRepo;
+    public KeycloakSyncService(
+            UserRepository usersRepository,
+            SponsorRepository sponsorRepository,
+            MunicipalOfficerRepository officerRepository
+    ) {
+        this.usersRepository = usersRepository;
+        this.sponsorRepository = sponsorRepository;
+        this.officerRepository = officerRepository;
+    }
 
-    @Autowired
-    private SponsorRepository sponsorRepo;
-
-    private static final String CLIENT_ID = "Aynak-server";
-
+    @Transactional
     public void syncFromKeycloak(Jwt jwt) {
 
-        String id = jwt.getSubject();
-        String email = jwt.getClaimAsString("email");
+        String keycloakId = jwt.getSubject();
         String username = jwt.getClaimAsString("preferred_username");
+        String email = jwt.getClaimAsString("email");
+
+        Set<String> roles = extractRolesFromJwt(jwt);
+
+        System.out.println("SYNCING FROM JWT");
+        System.out.println("KEYCLOAK ID: " + keycloakId);
+        System.out.println("USERNAME: " + username);
+        System.out.println("EMAIL: " + email);
+        System.out.println("ROLES: " + roles);
+
+        Users user = usersRepository.findById(keycloakId)
+                .orElse(new Users());
+
+        user.setId(keycloakId);
+        user.setUsername(username);
+        user.setEmail(email);
+
+        usersRepository.save(user);
+
+        if (roles.contains("Sponsor")) {
+            Sponsor sponsor = sponsorRepository.findById(keycloakId)
+                    .orElse(new Sponsor());
+
+            sponsor.setId(keycloakId);
+            sponsor.setSponsorName(username);
+            sponsor.setEmail(email);
+
+            sponsorRepository.save(sponsor);
+        }
+
+        if (roles.contains("MunicipalOfficer")) {
+            MunicipalOfficer officer = officerRepository.findById(keycloakId)
+                    .orElse(new MunicipalOfficer());
+
+            officer.setId(keycloakId);
+            officer.setFullName(email);
+            officer.setEmail(email);
+
+            officerRepository.save(officer);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Set<String> extractRolesFromJwt(Jwt jwt) {
 
         Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
-        if (resourceAccess == null || !resourceAccess.containsKey(CLIENT_ID)) {
-            System.out.println("User has no client roles, skipping sync...");
-            return;
+
+        if (resourceAccess == null) {
+            System.out.println("NO resource_access FOUND");
+            return Set.of("User");
         }
 
-        Map<String, Object> clientData = (Map<String, Object>) resourceAccess.get(CLIENT_ID);
-        Collection<String> roles = (Collection<String>) clientData.get("roles");
+        Map<String, Object> clientAccess =
+                (Map<String, Object>) resourceAccess.get("Aynak-server");
 
-        if (roles == null) return;
-
-        // ---- USER ROLE ----
-        if (roles.contains("User")) {
-            userRepo.findById(id).orElseGet(() -> {
-                Users user = new Users();
-                user.setId(id);
-                user.setEmail(email);
-                user.setUsername(username);
-                user.setPhoneNumber("N/A");
-                user.setRewardPoints(0);
-                user.setAddress(null);
-                return userRepo.save(user);
-            });
+        if (clientAccess == null) {
+            System.out.println("NO Aynak-server FOUND");
+            return Set.of("User");
         }
 
-        // ---- MUNICIPAL OFFICER ROLE ----
-        if (roles.contains("MunicipalOfficer")) {
-            officerRepo.findById(id).orElseGet(() -> {
-                MunicipalOfficer officer = new MunicipalOfficer();
-                officer.setId(id);
-                officer.setEmail(email);
-                officer.setFullName(username);
-                officer.setDepartmentName("Unknown");
-                officer.setPhoneNumber("N/A");
-                return officerRepo.save(officer);
-            });
+        Collection<String> roles =
+                (Collection<String>) clientAccess.get("roles");
+
+        if (roles == null || roles.isEmpty()) {
+            return Set.of("User");
         }
 
-        // ---- SPONSOR ROLE ----
-        if (roles.contains("Sponsor")) {
-            sponsorRepo.findById(id).orElseGet(() -> {
-                Sponsor sponsor = new Sponsor();
-                sponsor.setSponsorName(username);
-                sponsor.setId(id);
-                sponsor.setEmail(email);
-                sponsor.setCompanyType("Unknown");
-                sponsor.setPhone("N/A");
-                sponsor.setAddress(null);
-                return sponsorRepo.save(sponsor);
-            });
-        }
-
-        if (roles.contains("Admin")) {
-            System.out.println("Admin detected — no DB entity needed.");
-        }
+        return new HashSet<>(roles);
     }
 }
