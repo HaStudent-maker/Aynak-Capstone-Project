@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>AYNAK - Community Issue Reporting</title>
@@ -29,12 +30,20 @@
             justify-content: center;
             gap: 20px;
             margin-top: 10px;
+            align-items: center;
         }
 
         nav a {
             color: white;
             text-decoration: none;
             font-weight: bold;
+        }
+
+        .auth-btn {
+            background-color: white;
+            color: #2e7d32 !important;
+            padding: 8px 15px;
+            border-radius: 5px;
         }
 
         .hero {
@@ -88,7 +97,7 @@
             padding: 20px;
             margin: 15px;
             border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
 
@@ -113,54 +122,94 @@
         }
     </style>
 </head>
+
 <body>
 
-<header>
-    <h2>AYNAK</h2>
-    <nav>
-        <a href="#">Home</a>
-        <a href="report.html">Report Issue</a>
-        <a href="reward.html">reward</a>
-		<a href="http://localhost:8080/realms/Aynak/protocol/openid-connect/auth?client_id=Aynak-server&response_type=code&scope=openid&redirect_uri=http://localhost:8090&kc_action=register">
-		   Register
-		</a>
-		<a href="/oauth2/authorization/keycloak"
-		       style="background-color:white; color:#2e7d32; padding:8px 15px; border-radius:5px; text-decoration:none;">
-		        Sign In
-		    </a>
-    </nav>
-</header>
+    <header>
+        <h2>AYNAK</h2>
+        <nav>
+            <a href="#">Home</a>
+            <a href="report.html">Report Issue</a>
+            <a href="reward.html">Reward</a>
+			<!-- Sponsor Dashboard Button -->
+			<a id="sponsorDashboardBtn" class="auth-btn" style="display:none;">Sponsor Dashboard</a>
 
-<section class="hero">
-    <h1>Make Your Community Cleaner & Safer</h1>
-    <p>
-        Report public issues like trash, broken lights, or hazards in seconds.
-        Earn reward points when your report is resolved and redeem exciting offers from sponsors.
-    </p>
-    <button class="btn primary-btn">Report an Issue</button>
-    <button class="btn secondary-btn">View Rewards</button>
-</section>
+			<!-- Login/Logout Button -->
+			<a id="authBtn" class="auth-btn">Loading...</a>
+        </nav>
+    </header>
 
-<section class="features">
-    <div class="feature-card">
-        <h3>📸 Easy Reporting</h3>
-        <p>Take a photo, add location, and submit issues instantly.</p>
-    </div>
+    <section class="hero">
+        <h1>Make Your Community Cleaner & Safer</h1>
+        <p>
+            Report public issues like trash, broken lights, or hazards in seconds.
+            Earn reward points when your report is resolved and redeem exciting offers from sponsors.
+        </p>
+        <button class="btn primary-btn">Report an Issue</button>
+        <button class="btn secondary-btn">View Rewards</button>
+    </section>
 
-    <div class="feature-card">
-        <h3>🏛 Direct to Municipality</h3>
-        <p>Your report is automatically sent to the correct municipal officer.</p>
-    </div>
+    <section class="features">
+        <div class="feature-card">
+            <h3>📸 Easy Reporting</h3>
+            <p>Take a photo, add location, and submit issues instantly.</p>
+        </div>
 
-    <div class="feature-card">
-        <h3>🎁 Earn Rewards</h3>
-        <p>Get points when issues are resolved and redeem sponsor offers.</p>
-    </div>
-</section>
+        <div class="feature-card">
+            <h3>🏛 Direct to Municipality</h3>
+            <p>Your report is automatically sent to the correct municipal officer.</p>
+        </div>
 
-<footer>
-    <p>© 2026 AYNAK | Community Reporting Platform</p>
-</footer>
+        <div class="feature-card">
+            <h3>🎁 Earn Rewards</h3>
+            <p>Get points when issues are resolved and redeem sponsor offers.</p>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2026 AYNAK | Community Reporting Platform</p>
+    </footer>
+
+	<script>
+	    // Check if the user is logged in (session contains token)
+	    function isLoggedIn() {
+	        return localStorage.getItem("token") !== null;
+	    }
+
+	    // Update auth button and show Sponsor Dashboard if applicable
+	    function updateAuthButton() {
+	        const btn = document.getElementById("authBtn");
+
+	        if (isLoggedIn()) {
+	            // Logged in → show Logout
+	            btn.innerText = "Logout";
+	            btn.onclick = () => window.location.href = "/logout";
+
+	            // Show Sponsor Dashboard only if user has ROLE_Sponsor
+	            fetch('/api/debug/role', { credentials: 'same-origin' })
+	                .then(res => res.json())
+	                .then(data => {
+	                    if (data.roles && data.roles.includes("ROLE_Sponsor")) {
+	                        const sponsorBtn = document.getElementById("sponsorDashboardBtn");
+	                        sponsorBtn.style.display = "inline-block";
+	                        sponsorBtn.innerText = "Sponsor Dashboard";
+	                        sponsorBtn.onclick = () => window.location.href = "/sponsor-dashboard.html";
+	                    }
+	                });
+
+	        } else {
+	            // Not logged in → show Sign In
+	            btn.innerText = "Sign In";
+	            btn.onclick = () => window.location.href = "/oauth2/authorization/keycloak";
+
+	            // Hide sponsor button when not logged in
+	            document.getElementById("sponsorDashboardBtn").style.display = "none";
+	        }
+	    }
+
+	    window.onload = updateAuthButton;
+	</script>
 
 </body>
+
 </html>

@@ -26,13 +26,11 @@ public class SponsorServiceImpl implements SponsorService {
         Sponsor sponsor = sponsorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Sponsor not found"));
 
-        sponsor.setCompanyType(updatedSponsor.getCompanyType());
-        sponsor.setEmail(updatedSponsor.getEmail());
+        sponsor.setCompanyName(updatedSponsor.getCompanyName());
+        sponsor.setAddress(updatedSponsor.getAddress());
         sponsor.setPhone(updatedSponsor.getPhone());
-        
 
-        return sponsorRepository.save(sponsor);
-    }
+        return sponsorRepository.save(sponsor);}
 
     @Override
     public Sponsor getSponsorById(String id) {

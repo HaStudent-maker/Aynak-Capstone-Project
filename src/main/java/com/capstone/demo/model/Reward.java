@@ -50,11 +50,10 @@ public class Reward {
     @JoinColumn(name = "sponsor_id")
     private Sponsor sponsor;
 
-    @ManyToOne
-    @JoinColumn(name = "rewarded_user_id")
-    private Users redeemedBy;
+	@OneToMany(mappedBy = "reward", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<RewardTransaction> rewardTransactions = new ArrayList<>();
 
-    public Reward() {}
+   
  // --- STATUS LOGIC ---
     public void updateStatus() {
         if ((expiryDate != null && expiryDate.isBefore(LocalDate.now())) || this.quantity <= 0) {
@@ -104,7 +103,16 @@ public class Reward {
 	public void setQuantity(int quantity) {
 		this.quantity = quantity;
 	}
-    public Users getRedeemedBy() { return redeemedBy; }
-    public void setRedeemedBy(Users redeemedBy) { this.redeemedBy = redeemedBy; }
+
+
+	public List<RewardTransaction> getRewardTransactions() {
+		return rewardTransactions;
+	}
+
+
+	public void setRewardTransactions(List<RewardTransaction> rewardTransactions) {
+		this.rewardTransactions = rewardTransactions;
+	}
+	
 }
 

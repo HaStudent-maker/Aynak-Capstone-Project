@@ -2,12 +2,13 @@ package com.capstone.demo.controller;
 
 import com.capstone.demo.model.Reward;
 import com.capstone.demo.service.RewardService;
-import org.springframework.security.core.Authentication;
-
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,8 +32,9 @@ public class RewardController {
     @GetMapping("/sponsor")
     @PreAuthorize("hasRole('Sponsor')")
     public ResponseEntity<List<Reward>> getAllRewardsForSponsor(Authentication authentication) {
-        JwtAuthenticationToken token = (JwtAuthenticationToken) authentication;
-        String sponsorId = token.getToken().getSubject();
+
+        String sponsorId = getKeycloakId(authentication);
+
         return ResponseEntity.ok(rewardService.getRewardsBySponsor(sponsorId));
     }
 
@@ -43,52 +45,77 @@ public class RewardController {
         return ResponseEntity.ok(rewardService.getAllRewards());
     }
 
-    // CREATE Reward
+    // SPONSOR → CREATE REWARD
     @PostMapping
     @PreAuthorize("hasRole('Sponsor')")
-    public ResponseEntity<Reward> createReward(@RequestBody Reward reward) {
-        Reward created = rewardService.createReward(reward);
+    public ResponseEntity<Reward> createReward(
+            @RequestBody Reward reward,
+            Authentication authentication
+    ) {
+        String sponsorId = getKeycloakId(authentication);
+
+        Reward created = rewardService.createReward(reward, sponsorId);
+
         return ResponseEntity.ok(created);
     }
 
-    // UPDATE Reward
+    // SPONSOR → UPDATE OWN REWARD
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('Sponsor')")
     public ResponseEntity<Reward> updateReward(
             @PathVariable Long id,
-            @RequestBody Reward updatedReward) {
+            @RequestBody Reward updatedReward,
+            Authentication authentication
+    ) {
+        String sponsorId = getKeycloakId(authentication);
 
-        Reward updated = rewardService.updateReward(id, updatedReward);
+        Reward updated = rewardService.updateReward(id, updatedReward, sponsorId);
+
         return ResponseEntity.ok(updated);
     }
 
-    // GET Reward by ID
+    // SPONSOR → GET OWN REWARD BY ID
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('Sponsor')")
-    public ResponseEntity<Reward> getRewardById(@PathVariable Long id) {
-        Reward reward = rewardService.getRewardById(id);
+    public ResponseEntity<Reward> getRewardById(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        String sponsorId = getKeycloakId(authentication);
+
+        Reward reward = rewardService.getRewardByIdForSponsor(id, sponsorId);
+
         return ResponseEntity.ok(reward);
     }
 
-    // DELETE Reward
+    // SPONSOR → DELETE OWN REWARD
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('Sponsor')")
-    public ResponseEntity<String> deleteReward(@PathVariable Long id) {
-        rewardService.deleteReward(id);
+    public ResponseEntity<String> deleteReward(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        String sponsorId = getKeycloakId(authentication);
+
+        rewardService.deleteReward(id, sponsorId);
+
         return ResponseEntity.ok("Reward deleted successfully");
     }
 
-    // REDEEM Reward
-    @PostMapping("/redeem/{rewardId}")
-    @PreAuthorize("hasRole('User')")
-    public ResponseEntity<?> redeemReward(
-            @PathVariable Long rewardId,
-            Authentication authentication) {
+    private String getKeycloakId(Authentication authentication) {
 
-        JwtAuthenticationToken token = (JwtAuthenticationToken) authentication;
-        String userId = token.getToken().getSubject();
+        if (authentication instanceof JwtAuthenticationToken jwtAuth) {
+            return jwtAuth.getToken().getSubject();
+        }
 
-        Reward redeemed = rewardService.redeemReward(rewardId, userId);
-        return ResponseEntity.ok(redeemed);
+        if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
+            Object principal = oauthToken.getPrincipal();
+
+            if (principal instanceof OidcUser oidcUser) {
+                return oidcUser.getSubject();
+            }
+        }
+
+        throw new RuntimeException("Unable to extract Keycloak user ID from authentication");
     }
 }

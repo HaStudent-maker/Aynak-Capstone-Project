@@ -2,6 +2,8 @@ package com.capstone.demo.controller;
 
 import com.capstone.demo.security.KeycloakSyncService;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
@@ -40,6 +42,19 @@ public class AuthController {
                 "email", jwt.getClaimAsString("email"),
                 "roles", extractRoles(jwt)
         );
+    }
+    @RestController
+    @RequestMapping("/api/debug")
+    public class DebugController {
+
+        @GetMapping("/whoami")
+        public Map<String,Object> whoAmI(@AuthenticationPrincipal OidcUser oidcUser) {
+            Map<String,Object> map = new HashMap<>();
+            map.put("username", oidcUser.getPreferredUsername());
+            map.put("sub", oidcUser.getSubject());
+            map.put("authorities", oidcUser.getAuthorities()); // Spring session authorities
+            return map;
+        }
     }
 
     @SuppressWarnings("unchecked")

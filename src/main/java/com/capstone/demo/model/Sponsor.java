@@ -37,7 +37,7 @@ public class Sponsor {
     private String address;
 
     @Column(nullable = true)
-    private String companyType;
+    private String companyName;
     
     @JsonIgnore
     @OneToMany(mappedBy = "sponsor", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -87,12 +87,12 @@ public class Sponsor {
         this.address = address;
     }
 
-    public String getCompanyType() {
-        return companyType;
+    public String getCompanyName() {
+        return companyName;
     }
 
-    public void setCompanyType(String companyType) {
-        this.companyType = companyType;
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 
     public List<Reward> getRewards() {

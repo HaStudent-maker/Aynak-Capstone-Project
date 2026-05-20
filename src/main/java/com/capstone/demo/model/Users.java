@@ -45,8 +45,10 @@ public class Users {
     private List<IssueReport> issueReports;
 
     
-    @OneToMany(mappedBy = "redeemedBy", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Reward> rewards;
+    
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RewardTransaction> rewardTransactions = new ArrayList<>();
 
 
 	public String getId() {
@@ -97,6 +99,30 @@ public class Users {
 
 	public void setRewardPoints(int rewardPoints) {
 		this.rewardPoints = rewardPoints;
+	}
+
+	public String getPhonenumber() {
+		return phonenumber;
+	}
+
+	public void setPhonenumber(String phonenumber) {
+		this.phonenumber = phonenumber;
+	}
+
+	public List<IssueReport> getIssueReports() {
+		return issueReports;
+	}
+
+	public void setIssueReports(List<IssueReport> issueReports) {
+		this.issueReports = issueReports;
+	}
+
+	public List<RewardTransaction> getRewardTransactions() {
+		return rewardTransactions;
+	}
+
+	public void setRewardTransactions(List<RewardTransaction> rewardTransactions) {
+		this.rewardTransactions = rewardTransactions;
 	}
 
 	

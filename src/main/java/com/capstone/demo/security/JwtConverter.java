@@ -23,44 +23,48 @@ public class JwtConverter implements Converter<Jwt, AbstractAuthenticationToken>
     private final JwtConverterProperties properties;
     private final KeycloakSyncService keycloakSyncService;
 
-    public JwtConverter(JwtConverterProperties properties, KeycloakSyncService keycloakSyncService) { 
+    public JwtConverter(JwtConverterProperties properties, KeycloakSyncService keycloakSyncService) {
         this.properties = properties;
         this.keycloakSyncService = keycloakSyncService;
     }
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
-        // Sync user data with Keycloak
+        // Sync user data with Keycloak database
         keycloakSyncService.syncFromKeycloak(jwt);
 
-        // Extract roles and add to authorities
+        // Extract roles from JWT and merge with default authorities
         Collection<GrantedAuthority> authorities = Stream.concat(
                 jwtGrantedAuthoritiesConverter.convert(jwt).stream(),
                 extractResourceRoles(jwt).stream()
         ).collect(Collectors.toSet());
 
+        // Create Authentication token
         return new JwtAuthenticationToken(jwt, authorities, getPrincipalClaimName(jwt));
     }
 
     private String getPrincipalClaimName(Jwt jwt) {
-        String claimName = JwtClaimNames.SUB;
         if (properties.getPrincipalAttribute() != null) {
-            claimName = properties.getPrincipalAttribute();
+            return jwt.getClaim(properties.getPrincipalAttribute());
         }
-        return jwt.getClaim(claimName);
+        return jwt.getClaim(JwtClaimNames.SUB);
     }
 
     private Collection<? extends GrantedAuthority> extractResourceRoles(Jwt jwt) {
-        // Extract roles from JWT resource_access claim
         Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
-        Map<String, Object> resource;
-        Collection<String> resourceRoles;
 
-        if (resourceAccess == null || (resource = (Map<String, Object>) resourceAccess.get(properties.getResourceId())) == null || (resourceRoles = (Collection<String>) resource.get("roles")) == null) {
+        if (resourceAccess == null) {
             return Set.of();
         }
 
-        return resourceRoles.stream()
+        Map<String, Object> clientResource = (Map<String, Object>) resourceAccess.get(properties.getResourceId());
+        if (clientResource == null) return Set.of();
+
+        Collection<String> roles = (Collection<String>) clientResource.get("roles");
+        if (roles == null) return Set.of();
+
+        // Convert to Spring authorities
+        return roles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
                 .collect(Collectors.toSet());
     }

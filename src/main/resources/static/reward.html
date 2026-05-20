@@ -1,69 +1,471 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Rewards</title>
+    <title>AYNAK User Rewards</title>
+
     <style>
-        body { font-family: Arial; background:#f4f4f4; margin:0; padding:20px;}
-        .reward-container { display:flex; flex-wrap:wrap; gap:20px;}
-        .card {
-            background:white;
-            padding:15px;
-            width:250px;
-            border-radius:10px;
-            box-shadow:0 4px 8px rgba(0,0,0,0.1);
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f4f6f5;
+            color: #222;
         }
-        .card h3 { margin:0 0 10px 0; }
-        .points { color:green; font-weight:bold; }
+
+        header {
+            background: #1f3c34;
+            color: white;
+            padding: 20px 40px;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        header p {
+            margin-bottom: 0;
+        }
+
+        nav {
+            background: #173029;
+            padding: 12px 40px;
+        }
+
+        nav button,
+        nav a {
+            margin-right: 10px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #2e8b68;
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        nav button:hover,
+        nav a:hover {
+            background: #246d53;
+        }
+
+        main {
+            padding: 30px 40px;
+        }
+
+        section {
+            background: white;
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+        }
+
+        h2 {
+            color: #1f3c34;
+            margin-top: 0;
+        }
+
+        input,
         button {
-            padding:8px 12px;
-            border:none;
-            background:#007bff;
-            color:white;
-            border-radius:5px;
-            cursor:pointer;
+            display: block;
+            width: 100%;
+            max-width: 500px;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #bbb;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #1f7a5c;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: auto;
+        }
+
+        button:hover {
+            background: #145c43;
+        }
+
+        .danger {
+            background: #b83232;
+        }
+
+        .danger:hover {
+            background: #8f2525;
+        }
+
+        .reward-card,
+        .transaction-card {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-left: 5px solid #1f7a5c;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .reward-card h3,
+        .transaction-card h3 {
+            margin-top: 0;
+            color: #1f3c34;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #e8f5e9;
+            color: #1b5e20;
+            display: none;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #b71c1c;
+        }
+
+        pre {
+            background: #1e1e1e;
+            color: #00ff88;
+            padding: 15px;
+            border-radius: 10px;
+            overflow-x: auto;
         }
     </style>
 </head>
+
 <body>
 
-<h2>Available Rewards</h2>
+<header>
+    <h1>AYNAK User Rewards</h1>
+    <p>View available rewards, redeem rewards, and track your own reward transactions.</p>
+</header>
 
-<div class="reward-container" id="rewards"></div>
+<nav>
+    <button onclick="showSection('availableRewardsSection'); loadAvailableRewards();">Available Rewards</button>
+    <button onclick="showSection('redeemRewardSection')">Redeem Reward</button>
+    <button onclick="showSection('myTransactionsSection'); loadMyTransactions();">My Transactions</button>
+    <button onclick="showSection('filterTransactionsSection')">Filter by Company</button>
+    <button onclick="showSection('searchCodeSection')">Search by Code</button>
+    <a href="/Home.html">Home</a>
+    <button class="danger" onclick="logout()">Logout</button>
+</nav>
+
+<main>
+
+    <div id="messageBox" class="message"></div>
+
+    <!-- Available Rewards -->
+    <section id="availableRewardsSection">
+        <h2>Available Rewards</h2>
+        <button onclick="loadAvailableRewards()">Refresh Available Rewards</button>
+        <div id="availableRewardsContainer"></div>
+    </section>
+
+    <!-- Redeem Reward -->
+    <section id="redeemRewardSection" class="hidden">
+        <h2>Redeem Reward</h2>
+        <p>Enter the reward ID you want to redeem.</p>
+
+        <input id="redeemRewardId" type="number" placeholder="Reward ID">
+
+        <button onclick="redeemReward()">Redeem Reward</button>
+    </section>
+
+    <!-- My Transactions -->
+    <section id="myTransactionsSection" class="hidden">
+        <h2>My Reward Transactions</h2>
+        <button onclick="loadMyTransactions()">Refresh My Transactions</button>
+        <div id="myTransactionsContainer"></div>
+    </section>
+
+    <!-- Filter Transactions by Company -->
+    <section id="filterTransactionsSection" class="hidden">
+        <h2>Filter My Transactions by Company</h2>
+
+        <input id="companyName" placeholder="Company name e.g. Carrefour">
+
+        <button onclick="loadMyTransactionsByCompany()">Search</button>
+
+        <div id="companyTransactionsContainer"></div>
+    </section>
+
+    <!-- Search Transaction by Redemption Code -->
+    <section id="searchCodeSection" class="hidden">
+        <h2>Search My Transaction by Redemption Code</h2>
+
+        <input id="redemptionCode" placeholder="Enter redemption code">
+
+        <button onclick="loadTransactionByCode()">Search</button>
+
+        <div id="codeTransactionContainer"></div>
+    </section>
+
+</main>
 
 <script>
-    fetch('/api/user/rewards')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Not authorized");
-            }
-            return response.json();
-        })
-        .then(data => {
-            const container = document.getElementById('rewards');
-            data.forEach(reward => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <h3>${reward.name}</h3>
-                    <p>${reward.description}</p>
-                    <p class="points">${reward.pointsRequired} Points</p>
-                    <button onclick="redeem(${reward.id})">Redeem</button>
-                `;
-                container.appendChild(card);
-            });
-        })
-        .catch(error => {
-            alert("You must login as User to view rewards.");
+    function showSection(sectionId) {
+        const sections = [
+            "availableRewardsSection",
+            "redeemRewardSection",
+            "myTransactionsSection",
+            "filterTransactionsSection",
+            "searchCodeSection"
+        ];
+
+        sections.forEach(id => {
+            document.getElementById(id).classList.add("hidden");
         });
 
-    function redeem(id) {
-        fetch(`/api/user/rewards/${id}/redeem`, {
-            method: 'POST'
-        })
-        .then(res => res.text())
-        .then(msg => alert(msg))
-        .catch(err => alert("Error redeeming reward"));
+        document.getElementById(sectionId).classList.remove("hidden");
     }
+
+    function showMessage(message, isError = false) {
+        const messageBox = document.getElementById("messageBox");
+
+        messageBox.textContent = message;
+        messageBox.style.display = "block";
+
+        if (isError) {
+            messageBox.classList.add("error");
+        } else {
+            messageBox.classList.remove("error");
+        }
+    }
+
+    async function readResponse(response) {
+        const text = await response.text();
+
+        let data;
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch {
+            data = text;
+        }
+
+        if (!response.ok) {
+            throw new Error(typeof data === "string" ? data : JSON.stringify(data));
+        }
+
+        return data;
+    }
+
+    function renderRewards(rewards, containerId) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = "";
+
+        if (!Array.isArray(rewards) || rewards.length === 0) {
+            container.innerHTML = "<p>No rewards found.</p>";
+            return;
+        }
+
+        rewards.forEach(reward => {
+            const card = document.createElement("div");
+            card.className = "reward-card";
+
+            card.innerHTML = `
+                <h3>${reward.title || "Untitled Reward"}</h3>
+                <p><strong>Reward ID:</strong> ${reward.id}</p>
+                <p><strong>Description:</strong> ${reward.description || ""}</p>
+                <p><strong>Points Required:</strong> ${reward.pointsRequired || 0}</p>
+                <p><strong>Quantity:</strong> ${reward.quantity || 0}</p>
+                <p><strong>Expiry Date:</strong> ${reward.expiryDate || ""}</p>
+                <p><strong>Status:</strong> ${reward.status || ""}</p>
+                <button onclick="quickRedeem(${reward.id})">Redeem This Reward</button>
+            `;
+
+            container.appendChild(card);
+        });
+    }
+
+    function renderTransactions(transactions, containerId) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = "";
+
+        if (!Array.isArray(transactions) || transactions.length === 0) {
+            container.innerHTML = "<p>No transactions found.</p>";
+            return;
+        }
+
+        transactions.forEach(transaction => {
+            const card = document.createElement("div");
+            card.className = "transaction-card";
+
+            const reward = transaction.reward || {};
+            const sponsor = reward.sponsor || {};
+
+            card.innerHTML = `
+                <h3>Transaction #${transaction.id}</h3>
+                <p><strong>Reward:</strong> ${reward.title || "N/A"}</p>
+                <p><strong>Company:</strong> ${sponsor.companyName || "N/A"}</p>
+                <p><strong>Points Spent:</strong> ${transaction.pointsSpent || 0}</p>
+                <p><strong>Status:</strong> ${transaction.status || ""}</p>
+                <p><strong>Redeemed At:</strong> ${transaction.redeemedAt || ""}</p>
+                <p><strong>Redemption Code:</strong> ${transaction.redemptionCode || ""}</p>
+            `;
+
+            container.appendChild(card);
+        });
+    }
+
+    function renderSingleTransaction(transaction, containerId) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = "";
+
+        if (!transaction || !transaction.id) {
+            container.innerHTML = "<p>No transaction found.</p>";
+            return;
+        }
+
+        const reward = transaction.reward || {};
+        const sponsor = reward.sponsor || {};
+
+        const card = document.createElement("div");
+        card.className = "transaction-card";
+
+        card.innerHTML = `
+            <h3>Transaction #${transaction.id}</h3>
+            <p><strong>Reward:</strong> ${reward.title || "N/A"}</p>
+            <p><strong>Company:</strong> ${sponsor.companyName || "N/A"}</p>
+            <p><strong>Points Spent:</strong> ${transaction.pointsSpent || 0}</p>
+            <p><strong>Status:</strong> ${transaction.status || ""}</p>
+            <p><strong>Redeemed At:</strong> ${transaction.redeemedAt || ""}</p>
+            <p><strong>Redemption Code:</strong> ${transaction.redemptionCode || ""}</p>
+        `;
+
+        container.appendChild(card);
+    }
+
+    async function loadAvailableRewards() {
+        try {
+            const response = await fetch("/api/rewards/user", {
+                method: "GET",
+                credentials: "include"
+            });
+
+            const rewards = await readResponse(response);
+            renderRewards(rewards, "availableRewardsContainer");
+
+        } catch (error) {
+            console.error(error);
+            showMessage("Could not load available rewards. " + error.message, true);
+        }
+    }
+
+    async function redeemReward() {
+        const rewardId = document.getElementById("redeemRewardId").value;
+
+        if (!rewardId) {
+            showMessage("Please enter a reward ID.", true);
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/reward-transactions/user/redeem/" + rewardId, {
+                method: "POST",
+                credentials: "include"
+            });
+
+            const transaction = await readResponse(response);
+
+            showMessage("Reward redeemed successfully.");
+            renderSingleTransaction(transaction, "myTransactionsContainer");
+            showSection("myTransactionsSection");
+
+        } catch (error) {
+            console.error(error);
+            showMessage("Could not redeem reward. " + error.message, true);
+        }
+    }
+
+    function quickRedeem(rewardId) {
+        document.getElementById("redeemRewardId").value = rewardId;
+        redeemReward();
+    }
+
+    async function loadMyTransactions() {
+        try {
+            const response = await fetch("/api/reward-transactions/user/my", {
+                method: "GET",
+                credentials: "include"
+            });
+
+            const transactions = await readResponse(response);
+            renderTransactions(transactions, "myTransactionsContainer");
+
+        } catch (error) {
+            console.error(error);
+            showMessage("Could not load your transactions. " + error.message, true);
+        }
+    }
+
+    async function loadMyTransactionsByCompany() {
+        const companyName = document.getElementById("companyName").value;
+
+        if (!companyName) {
+            showMessage("Please enter a company name.", true);
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                "/api/reward-transactions/user/my/company?companyName=" + encodeURIComponent(companyName),
+                {
+                    method: "GET",
+                    credentials: "include"
+                }
+            );
+
+            const transactions = await readResponse(response);
+            renderTransactions(transactions, "companyTransactionsContainer");
+
+        } catch (error) {
+            console.error(error);
+            showMessage("Could not filter transactions. " + error.message, true);
+        }
+    }
+
+    async function loadTransactionByCode() {
+        const redemptionCode = document.getElementById("redemptionCode").value;
+
+        if (!redemptionCode) {
+            showMessage("Please enter a redemption code.", true);
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                "/api/reward-transactions/user/my/code/" + encodeURIComponent(redemptionCode),
+                {
+                    method: "GET",
+                    credentials: "include"
+                }
+            );
+
+            const transaction = await readResponse(response);
+            renderSingleTransaction(transaction, "codeTransactionContainer");
+
+        } catch (error) {
+            console.error(error);
+            showMessage("Could not find transaction. " + error.message, true);
+        }
+    }
+
+    function logout() {
+        window.location.href = "/logout";
+    }
+
+    window.onload = function () {
+        showSection("availableRewardsSection");
+        loadAvailableRewards();
+    };
 </script>
 
 </body>

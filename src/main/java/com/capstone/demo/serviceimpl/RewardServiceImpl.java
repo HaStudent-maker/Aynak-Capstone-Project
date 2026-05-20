@@ -1,13 +1,11 @@
 package com.capstone.demo.serviceimpl;
 
 import com.capstone.demo.model.Reward;
-import com.capstone.demo.model.Users;
+import com.capstone.demo.model.Sponsor;
 import com.capstone.demo.ropositary.RewardRepository;
-import com.capstone.demo.ropositary.UserRepository;
+import com.capstone.demo.ropositary.SponsorRepository;
 import com.capstone.demo.service.RewardService;
-
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -16,23 +14,58 @@ import java.util.List;
 @Service
 public class RewardServiceImpl implements RewardService {
 
-    @Autowired
-    private RewardRepository rewardRepository;
+    private final RewardRepository rewardRepository;
+    private final SponsorRepository sponsorRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    public RewardServiceImpl(
+            RewardRepository rewardRepository,
+            SponsorRepository sponsorRepository
+    ) {
+        this.rewardRepository = rewardRepository;
+        this.sponsorRepository = sponsorRepository;
+    }
+
+    // =========================
+    // SPONSOR: CREATE REWARD
+    // =========================
 
     @Override
-    public Reward createReward(Reward reward) {
-        reward.updateStatus(); // ensure status is correct before saving
+    @Transactional
+    public Reward createReward(Reward reward, String sponsorId) {
+
+    	Sponsor sponsor = sponsorRepository.findById(sponsorId)
+                .orElseThrow(() -> new RuntimeException("Sponsor not found"));
+
+        // Validate sponsor attributes
+        if (sponsor.getSponsorName() == null || sponsor.getEmail() == null ||
+            sponsor.getPhone() == null || sponsor.getCompanyName() == null) {
+            throw new RuntimeException("Sponsor attributes incomplete. Cannot create reward.");
+        }
+
+        // Set sponsor and default values
+        reward.setSponsor(sponsor);
+        reward.setStatus("ACTIVE");
+        if (reward.getExpiryDate() == null) {
+            reward.setExpiryDate(LocalDate.now().plusMonths(1));
+        }
+
         return rewardRepository.save(reward);
     }
 
+    // =========================
+    // SPONSOR: UPDATE OWN REWARD
+    // =========================
+
     @Override
-    public Reward updateReward(Long id, Reward updatedReward) {
+    @Transactional
+    public Reward updateReward(Long id, Reward updatedReward, String sponsorId) {
 
         Reward reward = rewardRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reward not found"));
+
+        if (reward.getSponsor() == null || !reward.getSponsor().getId().equals(sponsorId)) {
+            throw new RuntimeException("You can only update your own rewards");
+        }
 
         reward.setTitle(updatedReward.getTitle());
         reward.setDescription(updatedReward.getDescription());
@@ -40,10 +73,35 @@ public class RewardServiceImpl implements RewardService {
         reward.setExpiryDate(updatedReward.getExpiryDate());
         reward.setQuantity(updatedReward.getQuantity());
 
-        reward.updateStatus(); // refresh status
+        if (updatedReward.getStatus() != null && !updatedReward.getStatus().isBlank()) {
+            reward.setStatus(updatedReward.getStatus());
+        }
+
+        reward.updateStatus();
 
         return rewardRepository.save(reward);
     }
+
+    // =========================
+    // SPONSOR: GET OWN REWARD BY ID
+    // =========================
+
+    @Override
+    public Reward getRewardByIdForSponsor(Long id, String sponsorId) {
+
+        Reward reward = rewardRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reward not found"));
+
+        if (reward.getSponsor() == null || !reward.getSponsor().getId().equals(sponsorId)) {
+            throw new RuntimeException("You can only view your own rewards");
+        }
+
+        return reward;
+    }
+
+    // =========================
+    // ADMIN / SHARED
+    // =========================
 
     @Override
     public Reward getRewardById(Long id) {
@@ -56,56 +114,39 @@ public class RewardServiceImpl implements RewardService {
         return rewardRepository.findAll();
     }
 
+    // =========================
+    // USER: ACTIVE REWARDS ONLY
+    // =========================
+
     @Override
     public List<Reward> getActiveRewards() {
         return rewardRepository.findByStatus("ACTIVE");
     }
 
+    // =========================
+    // SPONSOR: GET OWN REWARDS
+    // =========================
+
+    @Override
+    public List<Reward> getRewardsBySponsor(String sponsorId) {
+        return rewardRepository.findBySponsorId(sponsorId);
+    }
+
+    // =========================
+    // SPONSOR: DELETE OWN REWARD
+    // =========================
+
     @Override
     @Transactional
-    public Reward redeemReward(Long rewardId, String userId) {
+    public void deleteReward(Long id, String sponsorId) {
 
-        Reward reward = rewardRepository.findById(rewardId)
+        Reward reward = rewardRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reward not found"));
 
-        Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Refresh reward status before redeem
-        reward.updateStatus();
-
-        if (!reward.getStatus().equals("ACTIVE")) {
-            throw new RuntimeException("Reward is not active or expired");
+        if (reward.getSponsor() == null || !reward.getSponsor().getId().equals(sponsorId)) {
+            throw new RuntimeException("You can only delete your own rewards");
         }
 
-        if (user.getRewardPoints() < reward.getPointsRequired()) {
-            throw new RuntimeException("Insufficient points");
-        }
-
-        // Deduct user points
-        user.setRewardPoints(user.getRewardPoints() - reward.getPointsRequired());
-
-        // Reduce reward quantity using entity logic
-        boolean success = reward.redeem();
-        if (!success) {
-            throw new RuntimeException("Reward is out of stock");
-        }
-
-        // Link redeemed user
-        reward.setRedeemedBy(user);
-
-        userRepository.save(user);
-        return rewardRepository.save(reward);
+        rewardRepository.delete(reward);
     }
-
-    @Override
-    public void deleteReward(Long id) {
-        rewardRepository.deleteById(id);
-    }
-
-	@Override
-	public List<Reward> getRewardsBySponsor(String sponsorId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

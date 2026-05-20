@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AYNAK Sponsor Dashboard</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f4f6f5;
+            color: #222;
+        }
+
+        header {
+            background: #1f3c34;
+            color: white;
+            padding: 20px 40px;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        nav {
+            background: #173029;
+            padding: 12px 40px;
+        }
+
+        nav button,
+        nav a {
+            margin-right: 10px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #2e8b68;
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        nav button:hover,
+        nav a:hover {
+            background: #246d53;
+        }
+
+        main {
+            padding: 30px 40px;
+        }
+
+        section {
+            background: white;
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+        }
+
+        h2 {
+            color: #1f3c34;
+            margin-top: 0;
+        }
+
+        input,
+        textarea,
+        select {
+            display: block;
+            width: 100%;
+            max-width: 500px;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #bbb;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            min-height: 90px;
+        }
+
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #1f7a5c;
+            color: white;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        button:hover {
+            background: #145c43;
+        }
+
+        .danger {
+            background: #b83232;
+        }
+
+        .danger:hover {
+            background: #8f2525;
+        }
+
+        .reward-card {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-left: 5px solid #1f7a5c;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .reward-card h3 {
+            margin-top: 0;
+            color: #1f3c34;
+        }
+
+        pre {
+            background: #1e1e1e;
+            color: #00ff88;
+            padding: 15px;
+            border-radius: 10px;
+            overflow-x: auto;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #e8f5e9;
+            color: #1b5e20;
+            display: none;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #b71c1c;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>AYNAK Sponsor Dashboard</h1>
+    <p>Create and manage sponsor rewards for AYNAK users.</p>
+</header>
+
+<nav>
+    <button onclick="showSection('sponsorProfileSection')">Sponsor Profile</button>
+    <button onclick="showSection('createRewardSection')">Create Reward</button>
+    <button onclick="showSection('myRewardsSection')">My Rewards</button>
+    <a href="/Home.html">Home</a>
+    <button onclick="logout()">Logout</button>
+</nav>
+
+<main>
+
+    <div id="messageBox" class="message"></div>
+
+    <!-- Sponsor Profile Section -->
+    <section id="sponsorProfileSection">
+        <h2>Sponsor Profile</h2>
+
+        <input id="sponsorFullName" placeholder="Sponsor Name">
+        <input id="sponsorEmail" type="email" placeholder="Email">
+        <input id="sponsorPhone" type="tel" placeholder="Phone Number">
+        <input id="sponsorAddress" placeholder="Address">
+        <input id="sponsorCompany" placeholder="Company Name">
+
+        <button onclick="updateSponsor()">Update Profile</button>
+    </section>
+
+    <!-- Create Reward Section -->
+    <section id="createRewardSection">
+        <h2>Create New Reward</h2>
+
+        <input id="title" placeholder="Reward title e.g. Carrefour Discount">
+        <textarea id="description" placeholder="Reward description"></textarea>
+        <input id="pointsRequired" type="number" placeholder="Points required e.g. 100">
+        <input id="quantity" type="number" placeholder="Quantity e.g. 25">
+        <input id="expiryDate" type="date">
+
+        <button onclick="createReward()">Create Reward</button>
+    </section>
+
+    <!-- My Rewards Section -->
+    <section id="myRewardsSection" class="hidden">
+        <h2>My Rewards</h2>
+        <button onclick="loadMyRewards()">Refresh Rewards</button>
+        <div id="myRewardsContainer"></div>
+    </section>
+
+</main>
+
+<script>
+    function showMessage(message, isError = false) {
+        const messageBox = document.getElementById("messageBox");
+
+        messageBox.innerText = message;
+        messageBox.style.display = "block";
+
+        if (isError) {
+            messageBox.classList.add("error");
+        } else {
+            messageBox.classList.remove("error");
+        }
+    }
+
+    function showSection(sectionId) {
+        const sections = [
+            "sponsorProfileSection",
+            "createRewardSection",
+            "myRewardsSection"
+        ];
+
+        sections.forEach(id => {
+            const section = document.getElementById(id);
+            if (section) {
+                section.classList.add("hidden");
+            }
+        });
+
+        const selectedSection = document.getElementById(sectionId);
+        if (selectedSection) {
+            selectedSection.classList.remove("hidden");
+        }
+    }
+
+    async function loadSponsorProfile() {
+        try {
+            const res = await fetch("/api/sponsors/me", {
+                method: "GET",
+                credentials: "include"
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || "Failed to load sponsor profile");
+            }
+
+            const sponsor = await res.json();
+
+            document.getElementById("sponsorFullName").value = sponsor.sponsorName || "";
+            document.getElementById("sponsorEmail").value = sponsor.email || "";
+            document.getElementById("sponsorPhone").value = sponsor.phone || "";
+            document.getElementById("sponsorAddress").value = sponsor.address || "";
+            document.getElementById("sponsorCompany").value = sponsor.companyName || "";
+
+        } catch (err) {
+            console.error("Failed to load sponsor profile:", err);
+            showMessage("Could not load sponsor profile. " + err.message, true);
+        }
+    }
+
+    async function updateSponsor() {
+        const sponsorData = {
+            sponsorName: document.getElementById("sponsorFullName").value,
+            email: document.getElementById("sponsorEmail").value,
+            phone: document.getElementById("sponsorPhone").value,
+            address: document.getElementById("sponsorAddress").value,
+            companyName: document.getElementById("sponsorCompany").value
+        };
+
+        try {
+            const res = await fetch("/api/sponsors/me", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "include",
+                body: JSON.stringify(sponsorData)
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || "Failed to update sponsor profile");
+            }
+
+            const updatedSponsor = await res.json();
+
+            document.getElementById("sponsorFullName").value = updatedSponsor.sponsorName || "";
+            document.getElementById("sponsorEmail").value = updatedSponsor.email || "";
+            document.getElementById("sponsorPhone").value = updatedSponsor.phone || "";
+            document.getElementById("sponsorAddress").value = updatedSponsor.address || "";
+            document.getElementById("sponsorCompany").value = updatedSponsor.companyName || "";
+
+            showMessage("Sponsor profile updated successfully.");
+
+        } catch (err) {
+            console.error("Failed to update sponsor profile:", err);
+            showMessage("Could not update sponsor profile. " + err.message, true);
+        }
+    }
+
+    async function createReward() {
+        const rewardData = {
+            title: document.getElementById("title").value,
+            description: document.getElementById("description").value,
+            pointsRequired: parseInt(document.getElementById("pointsRequired").value),
+            quantity: parseInt(document.getElementById("quantity").value),
+            expiryDate: document.getElementById("expiryDate").value
+        };
+
+        if (!rewardData.title || !rewardData.description || !rewardData.pointsRequired || !rewardData.quantity || !rewardData.expiryDate) {
+            showMessage("Please fill in all reward fields.", true);
+            return;
+        }
+
+        try {
+            const res = await fetch("/api/rewards", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "include",
+                body: JSON.stringify(rewardData)
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || "Failed to create reward");
+            }
+
+            const createdReward = await res.json();
+
+            showMessage("Reward created successfully.");
+
+            document.getElementById("title").value = "";
+            document.getElementById("description").value = "";
+            document.getElementById("pointsRequired").value = "";
+            document.getElementById("quantity").value = "";
+            document.getElementById("expiryDate").value = "";
+
+            console.log("Created reward:", createdReward);
+
+        } catch (err) {
+            console.error("Failed to create reward:", err);
+            showMessage("Could not create reward. " + err.message, true);
+        }
+    }
+
+    async function loadMyRewards() {
+        const container = document.getElementById("myRewardsContainer");
+        container.innerHTML = "";
+
+        try {
+            const res = await fetch("/api/rewards/sponsor", {
+                method: "GET",
+                credentials: "include"
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || "Failed to load rewards");
+            }
+
+            const rewards = await res.json();
+
+            if (!Array.isArray(rewards) || rewards.length === 0) {
+                container.innerHTML = "<p>No rewards found.</p>";
+                return;
+            }
+
+            rewards.forEach(reward => {
+                const card = document.createElement("div");
+                card.className = "reward-card";
+
+                card.innerHTML = `
+                    <h3>${reward.title || "Untitled Reward"}</h3>
+                    <p><strong>Description:</strong> ${reward.description || ""}</p>
+                    <p><strong>Points Required:</strong> ${reward.pointsRequired || 0}</p>
+                    <p><strong>Quantity:</strong> ${reward.quantity || 0}</p>
+                    <p><strong>Expiry Date:</strong> ${reward.expiryDate || ""}</p>
+                    <p><strong>Status:</strong> ${reward.status || ""}</p>
+                `;
+
+                container.appendChild(card);
+            });
+
+        } catch (err) {
+            console.error("Failed to load rewards:", err);
+            container.innerHTML = "<p>Could not load rewards.</p>";
+            showMessage("Could not load rewards. " + err.message, true);
+        }
+    }
+
+    function logout() {
+        window.location.href = "/logout";
+    }
+
+    window.onload = function () {
+        showSection("sponsorProfileSection");
+        loadSponsorProfile();
+    };
+</script>
+
+</body>
+</html>
