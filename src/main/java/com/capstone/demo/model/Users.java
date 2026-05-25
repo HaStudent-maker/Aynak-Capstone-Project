@@ -37,6 +37,12 @@ public class Users {
     
     @Column(name = "rewardPoints", nullable = true)
     private int rewardPoints = 0; // Points earned from reporting issues
+    
+    @Column(name="firstName", nullable=false)
+    private String FirstName;
+    
+    @Column(name="lastName", nullable=false)
+    private String LastName;
 
      // Account status
     
@@ -50,6 +56,23 @@ public class Users {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RewardTransaction> rewardTransactions = new ArrayList<>();
 
+
+    
+	public String getFirstName() {
+		return FirstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.FirstName = firstName;
+	}
+
+	public String getLastName() {
+		return LastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.LastName = lastName;
+	}
 
 	public String getId() {
 		return id;
