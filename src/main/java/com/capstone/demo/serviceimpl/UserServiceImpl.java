@@ -50,6 +50,8 @@ public class UserServiceImpl implements UserService {
             user.setPhoneNumber(userData.getPhoneNumber());
             user.setAddress(userData.getAddress());
             user.setRewardPoints(userData.getRewardPoints());
+            user.setLastName(userData.getLastName());
+            user.setFirstName(userData.getFirstName());
             return userRepository.save(user);
         }
         return null;
