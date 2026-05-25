@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Base64;
 
 @Service
 public class IssueReportServiceImpl implements IssueReportService {
@@ -101,13 +102,12 @@ public class IssueReportServiceImpl implements IssueReportService {
         IssueReport issue = issueReportRepo.findById(issueId)
                 .orElseThrow(() -> new RuntimeException("Issue not found"));
 
-        try {
-            issue.setImageData(imageFile.getBytes());
-            issue.setImageType(imageFile.getContentType());
-            issueReportRepo.save(issue);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to upload image");
-        }
+        String imageUrl = "https://storage.example.com/issues/" + imageFile.getOriginalFilename();
+
+        issue.setImageData(imageUrl);
+        issue.setImageType(imageFile.getContentType());
+
+        issueReportRepo.save(issue);
     }
 
 
