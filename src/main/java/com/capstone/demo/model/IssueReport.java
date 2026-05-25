@@ -32,7 +32,7 @@ public class IssueReport {
     private String description;
 
 	@Column(name = "imageData", nullable = false, columnDefinition = "LONGBLOB")
-	private byte[] imageData;
+	private String imageData;
 
 	@Column(name="imageType", nullable=false)
 	private String imageType;
@@ -42,6 +42,12 @@ public class IssueReport {
 
 	@Column(name="status", nullable = false)
     private String status = "PENDING";
+	
+	@Column(name="longitude", nullable = false)
+    private String Longitude;
+	
+	@Column(name="latitude", nullable = false)
+    private String Latitude;
 	
 	
 
@@ -110,12 +116,30 @@ public class IssueReport {
 		this.reportedBy = reportedBy;
 	}
 	
-	public byte[] getImageData() {
-	    return imageData;
+	
+
+	public String getImageData() {
+		return imageData;
 	}
 
-	public void setImageData(byte[] imageData) {
-	    this.imageData = imageData;
+	public void setImageData(String imageData) {
+		this.imageData = imageData;
+	}
+
+	public String getLongitude() {
+		return Longitude;
+	}
+
+	public void setLongitude(String longitude) {
+		this.Longitude = longitude;
+	}
+
+	public String getLatitude() {
+		return Latitude;
+	}
+
+	public void setLatitude(String latitude) {
+		this.Latitude = latitude;
 	}
 
 	public String getImageType() {
@@ -141,6 +165,7 @@ public class IssueReport {
 	public void setStatus(String status) {
 		this.status = status;
 	}
+	
 }
 
 
