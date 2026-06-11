@@ -1,5 +1,7 @@
 package com.capstone.demo.serviceimpl;
 
+import com.capstone.demo.ai.AiAgentClient;
+
 import com.capstone.demo.model.*;
 import com.capstone.demo.ropositary.IssueReportRepository;
 import com.capstone.demo.ropositary.MunicipalOfficerRepository;
@@ -8,6 +10,10 @@ import com.capstone.demo.service.IssueReportService;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+
+import com.capstone.demo.exception.BadRequestException;
+import java.util.Map;
 
 import java.io.IOException;
 import java.util.List;
@@ -19,15 +25,19 @@ public class IssueReportServiceImpl implements IssueReportService {
     private final IssueReportRepository issueReportRepo;
     private final UserRepository usersRepo;
     private final MunicipalOfficerRepository officerRepo;
+    private final AiAgentClient aiAgentClient;   // new field
+
+
 
     public IssueReportServiceImpl(IssueReportRepository issueReportRepo,
                                   UserRepository usersRepo,
-                                  MunicipalOfficerRepository officerRepo) {
+                                  MunicipalOfficerRepository officerRepo,
+                                  AiAgentClient aiAgentClient) {
         this.issueReportRepo = issueReportRepo;
         this.usersRepo = usersRepo;
         this.officerRepo = officerRepo;
+        this.aiAgentClient = aiAgentClient;
     }
-
     @Override
     public IssueReport submitIssue(IssueReport issue, String userId) {
     	Users user = usersRepo.findById(userId)
@@ -120,4 +130,50 @@ public class IssueReportServiceImpl implements IssueReportService {
     public void deleteIssue(Long id) {
         issueReportRepo.deleteById(id);
     }
+    
+
+
+    
+    @Override
+    public IssueReport submitIssueWithImage(String userId, String description,
+                                            String location, String latitude,
+                                            String longitude, MultipartFile image) {
+
+        Users user = usersRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 1. run the AI pipeline
+        Map<String, Object> ai = aiAgentClient.analyze(image, latitude, longitude, description);
+
+        // 2. duplicate? reject
+        if (Boolean.TRUE.equals(ai.get("is_duplicate"))) {
+            throw new BadRequestException("This incident appears to already be reported nearby.");
+        }
+
+        // 3. build the report from AI results
+        IssueReport issue = new IssueReport();
+        issue.setReportedBy(user);
+        issue.setDescription(description);
+        issue.setLocation(location);
+        issue.setLatitude(latitude);
+        issue.setLongitude(longitude);
+        issue.setStatus("PENDING");
+        issue.setCategory((String) ai.get("category"));
+        issue.setUrgency((String) ai.get("urgency"));
+
+        Object objects = ai.get("objects_detected");
+        if (objects instanceof java.util.List<?> list) {
+            issue.setAiObjects(String.join(", ",
+                    list.stream().map(String::valueOf).toList()));
+        }
+
+        // 4. store the BLURRED image, not the original
+        issue.setImageData((String) ai.get("blurred_image_base64"));
+        issue.setImageType("image/jpeg");
+
+        return issueReportRepo.save(issue);
+        // deliberately NO +10 points here — points come on admin approval later
+    }
+
+	
 }

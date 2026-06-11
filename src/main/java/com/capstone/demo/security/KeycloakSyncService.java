@@ -50,6 +50,9 @@ public class KeycloakSyncService {
         user.setId(keycloakId);
         user.setUsername(username);
         user.setEmail(email);
+        user.setFirstName(jwt.getClaimAsString("given_name") != null ? jwt.getClaimAsString("given_name") : username);
+        user.setLastName(jwt.getClaimAsString("family_name") != null ? jwt.getClaimAsString("family_name") : "User");
+
 
         usersRepository.save(user);
 
@@ -60,7 +63,7 @@ public class KeycloakSyncService {
             sponsor.setId(keycloakId);
             sponsor.setSponsorName(username);
             sponsor.setEmail(email);
-
+          
             sponsorRepository.save(sponsor);
         }
 

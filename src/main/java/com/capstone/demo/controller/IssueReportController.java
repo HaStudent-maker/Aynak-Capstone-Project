@@ -85,5 +85,18 @@ public class IssueReportController {
 
         return ResponseEntity.ok("Image uploaded successfully");
     }
+    
+    @PostMapping(value = "/submit-with-image/{userId}", consumes = "multipart/form-data")
+    public ResponseEntity<IssueReport> submitIssueWithImage(
+            @PathVariable String userId,
+            @RequestParam("description") String description,
+            @RequestParam("location") String location,
+            @RequestParam("latitude") String latitude,
+            @RequestParam("longitude") String longitude,
+            @RequestParam("image") MultipartFile image) {
+
+        return ResponseEntity.ok(issueService.submitIssueWithImage(
+                userId, description, location, latitude, longitude, image));
+    }
 
 }

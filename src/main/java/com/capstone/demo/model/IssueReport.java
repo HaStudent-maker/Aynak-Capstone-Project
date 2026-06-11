@@ -50,8 +50,12 @@ public class IssueReport {
     private String Latitude;
 	
 	
+	// ai attributes
+	@Column(name = "urgency")
+	private String urgency;
 
-	
+	@Column(name = "ai_objects")
+	private String aiObjects;
 
 	
 
@@ -165,6 +169,15 @@ public class IssueReport {
 	public void setStatus(String status) {
 		this.status = status;
 	}
+	
+	public String getUrgency() { return urgency; }
+	public void setUrgency(String urgency) { this.urgency = urgency; }
+	public String getAiObjects() { return aiObjects; }
+	public void setAiObjects(String aiObjects) { this.aiObjects = aiObjects; }
+	
+
+	
+
 	
 }
 

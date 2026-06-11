@@ -25,4 +25,8 @@ public interface IssueReportService {
 
 
     void deleteIssue(Long id);
+    
+    IssueReport submitIssueWithImage(String userId, String description,
+            String location, String latitude,
+            String longitude, MultipartFile image);
 }
