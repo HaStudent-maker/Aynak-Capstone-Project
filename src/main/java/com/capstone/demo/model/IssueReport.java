@@ -25,13 +25,16 @@ public class IssueReport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+	@Column(name = "title", nullable = false)
+    private String Title;
+	
 	@Column(name = "category", nullable = false)
     private String category;
 	
 	@Column(name = "description", nullable = false)
     private String description;
 
-	@Column(name = "imageData", nullable = false, columnDefinition = "LONGBLOB")
+	@Column(name = "imageData", nullable = false, columnDefinition = "LONGTEXT")
 	private String imageData;
 
 	@Column(name="imageType", nullable=false)
@@ -43,10 +46,10 @@ public class IssueReport {
 	@Column(name="status", nullable = false)
     private String status = "PENDING";
 	
-	@Column(name="longitude", nullable = false)
+	@Column(name="longitude", nullable = true)
     private String Longitude;
 	
-	@Column(name="latitude", nullable = false)
+	@Column(name="latitude", nullable = true)
     private String Latitude;
 	
 	
@@ -54,14 +57,15 @@ public class IssueReport {
 	
 
 	
-
+	@JsonIgnore
 	@ManyToOne
 	@JoinColumn(name = "assigned_officer_id")
 	private MunicipalOfficer assignedOfficer;
 	
-    @ManyToOne
-    @JoinColumn(name = "reported_by")  // the foreign key
-    private Users reportedBy;
+	@JsonIgnore
+	@ManyToOne
+	@JoinColumn(name = "reported_by")
+	private Users reportedBy;
 
    
 
@@ -74,8 +78,18 @@ public class IssueReport {
     public void setId(Long id) {
         this.id = id;
     }
+    
+    
 
-    public String getCategory() {
+    public String getTitle() {
+		return Title;
+	}
+
+	public void setTitle(String title) {
+		this.Title = title;
+	}
+
+	public String getCategory() {
         return category;
     }
 

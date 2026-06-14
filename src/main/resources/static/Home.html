@@ -129,7 +129,7 @@
         <h2>AYNAK</h2>
         <nav>
             <a href="#">Home</a>
-            <a href="report.html">Report Issue</a>
+            <a href="/report.html">Report Issue</a>
             <a href="reward.html">Reward</a>
 			<!-- Sponsor Dashboard Button -->
 			<a id="sponsorDashboardBtn" class="auth-btn" style="display:none;">Sponsor Dashboard</a>
@@ -145,8 +145,8 @@
             Report public issues like trash, broken lights, or hazards in seconds.
             Earn reward points when your report is resolved and redeem exciting offers from sponsors.
         </p>
-        <button class="btn primary-btn">Report an Issue</button>
-        <button class="btn secondary-btn">View Rewards</button>
+		<button class="btn primary-btn" onclick="goToReport()">Report an Issue</button>
+		<button class="btn secondary-btn" onclick="goToRewards()">View Rewards</button>
     </section>
 
     <section class="features">
@@ -171,40 +171,48 @@
     </footer>
 
 	<script>
-	    // Check if the user is logged in (session contains token)
-	    function isLoggedIn() {
-	        return localStorage.getItem("token") !== null;
+	    async function updateAuthButton() {
+	        const authBtn = document.getElementById("authBtn");
+	        const sponsorBtn = document.getElementById("sponsorDashboardBtn");
+
+	        sponsorBtn.style.display = "none";
+
+	        try {
+	            const response = await fetch("/api/debug/role", {
+	                method: "GET",
+	                credentials: "same-origin"
+	            });
+
+	            if (!response.ok) {
+	                authBtn.innerText = "Sign In";
+	                authBtn.onclick = () => window.location.href = "/oauth2/authorization/keycloak";
+	                return;
+	            }
+
+	            const data = await response.json();
+	            const roles = data.roles || [];
+
+	            authBtn.innerText = "Logout";
+	            authBtn.onclick = () => window.location.href = "/logout";
+
+	            if (roles.includes("ROLE_Sponsor")) {
+	                sponsorBtn.style.display = "inline-block";
+	                sponsorBtn.innerText = "Sponsor Dashboard";
+	                sponsorBtn.onclick = () => window.location.href = "/sponsor-dashboard.html";
+	            }
+
+	        } catch (error) {
+	            authBtn.innerText = "Sign In";
+	            authBtn.onclick = () => window.location.href = "/oauth2/authorization/keycloak";
+	        }
 	    }
 
-	    // Update auth button and show Sponsor Dashboard if applicable
-	    function updateAuthButton() {
-	        const btn = document.getElementById("authBtn");
+	    function goToReport() {
+	        window.location.href = "/report.html";
+	    }
 
-	        if (isLoggedIn()) {
-	            // Logged in → show Logout
-	            btn.innerText = "Logout";
-	            btn.onclick = () => window.location.href = "/logout";
-
-	            // Show Sponsor Dashboard only if user has ROLE_Sponsor
-	            fetch('/api/debug/role', { credentials: 'same-origin' })
-	                .then(res => res.json())
-	                .then(data => {
-	                    if (data.roles && data.roles.includes("ROLE_Sponsor")) {
-	                        const sponsorBtn = document.getElementById("sponsorDashboardBtn");
-	                        sponsorBtn.style.display = "inline-block";
-	                        sponsorBtn.innerText = "Sponsor Dashboard";
-	                        sponsorBtn.onclick = () => window.location.href = "/sponsor-dashboard.html";
-	                    }
-	                });
-
-	        } else {
-	            // Not logged in → show Sign In
-	            btn.innerText = "Sign In";
-	            btn.onclick = () => window.location.href = "/oauth2/authorization/keycloak";
-
-	            // Hide sponsor button when not logged in
-	            document.getElementById("sponsorDashboardBtn").style.display = "none";
-	        }
+	    function goToRewards() {
+	        window.location.href = "/reward.html";
 	    }
 
 	    window.onload = updateAuthButton;

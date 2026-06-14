@@ -35,6 +35,8 @@ public class KeycloakSyncService {
         String keycloakId = jwt.getSubject();
         String username = jwt.getClaimAsString("preferred_username");
         String email = jwt.getClaimAsString("email");
+        String firstName = jwt.getClaimAsString("given_name");
+        String lastName = jwt.getClaimAsString("family_name");
 
         Set<String> roles = extractRolesFromJwt(jwt);
 
@@ -44,14 +46,13 @@ public class KeycloakSyncService {
         System.out.println("EMAIL: " + email);
         System.out.println("ROLES: " + roles);
 
-        Users user = usersRepository.findById(keycloakId)
-                .orElse(new Users());
-
-        user.setId(keycloakId);
-        user.setUsername(username);
-        user.setEmail(email);
-
-        usersRepository.save(user);
+        /*
+         * IMPORTANT:
+         * Users table should contain only normal system-created users.
+         * Sponsors go to sponsor table.
+         * Municipal officers go to municipal_officer table.
+         * Admins do not need to be saved in users table.
+         */
 
         if (roles.contains("Sponsor")) {
             Sponsor sponsor = sponsorRepository.findById(keycloakId)
@@ -62,6 +63,7 @@ public class KeycloakSyncService {
             sponsor.setEmail(email);
 
             sponsorRepository.save(sponsor);
+            return;
         }
 
         if (roles.contains("MunicipalOfficer")) {
@@ -69,11 +71,34 @@ public class KeycloakSyncService {
                     .orElse(new MunicipalOfficer());
 
             officer.setId(keycloakId);
-            officer.setFullName(email);
+            officer.setFullName(username);
             officer.setEmail(email);
 
             officerRepository.save(officer);
+            return;
         }
+
+        if (roles.contains("Admin")) {
+            System.out.println("Admin detected. Admin is not saved in Users table.");
+            return;
+        }
+
+        if (roles.contains("User")) {
+            Users user = usersRepository.findById(keycloakId)
+                    .orElse(new Users());
+
+            user.setId(keycloakId);
+            user.setUsername(username);
+            user.setEmail(email);
+
+            user.setFirstName(firstName != null ? firstName : username);
+            user.setLastName(lastName != null ? lastName : "");
+
+            usersRepository.save(user);
+            return;
+        }
+
+        System.out.println("No recognized AYNAK role found. Nothing saved.");
     }
 
     @SuppressWarnings("unchecked")
@@ -83,7 +108,7 @@ public class KeycloakSyncService {
 
         if (resourceAccess == null) {
             System.out.println("NO resource_access FOUND");
-            return Set.of("User");
+            return Set.of();
         }
 
         Map<String, Object> clientAccess =
@@ -91,14 +116,14 @@ public class KeycloakSyncService {
 
         if (clientAccess == null) {
             System.out.println("NO Aynak-server FOUND");
-            return Set.of("User");
+            return Set.of();
         }
 
         Collection<String> roles =
                 (Collection<String>) clientAccess.get("roles");
 
         if (roles == null || roles.isEmpty()) {
-            return Set.of("User");
+            return Set.of();
         }
 
         return new HashSet<>(roles);

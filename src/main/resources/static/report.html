@@ -2,84 +2,232 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>AYNAK - Report Issue</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reports Dashboard</title>
-    <!-- Tailwind CSS CDN for modern styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background-color: #f4f7f9;
+        }
+
+        header {
+            background-color: #2e7d32;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        nav {
+            margin-top: 10px;
+        }
+
+        nav a {
+            color: white;
+            margin: 0 10px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #2e7d32;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #256428;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            display: none;
+            border-radius: 5px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .preview {
+            margin-top: 15px;
+            max-width: 100%;
+            display: none;
+            border-radius: 5px;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans">
 
-    <!-- Header -->
-    <header class="bg-blue-600 text-white py-4 shadow-md">
-        <div class="container mx-auto flex justify-between items-center px-4">
-            <h1 class="text-2xl font-bold">Reports Dashboard</h1>
-            <input type="text" placeholder="Search reports..." id="searchInput"
-                   class="px-3 py-1 rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-300">
-        </div>
-    </header>
+<body>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 mt-6">
+<header>
+    <h1>AYNAK</h1>
+    <nav>
+        <a href="/Home.html">Home</a>
+        <a href="/reward.html">Rewards</a>
+        <a href="/logout">Logout</a>
+    </nav>
+</header>
 
-        <!-- Reports Table -->
-        <div class="bg-white shadow rounded-lg overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reporter</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="reportTableBody" class="bg-white divide-y divide-gray-200">
-                    <!-- Example row -->
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">1</td>
-                        <td class="px-6 py-4 whitespace-nowrap">Broken streetlight</td>
-                        <td class="px-6 py-4 whitespace-nowrap">John Doe</td>
-                        <td class="px-6 py-4 whitespace-nowrap">2026-02-24</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                Pending
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                            <button class="text-blue-600 hover:text-blue-900 mr-2">View</button>
-                            <button class="text-green-600 hover:text-green-900 mr-2">Approve</button>
-                            <button class="text-red-600 hover:text-red-900">Reject</button>
-                        </td>
-                    </tr>
-                    <!-- More rows will be added dynamically -->
-                </tbody>
-            </table>
-        </div>
+<div class="container">
+    <h2>Report a Public Issue</h2>
 
-    </main>
+    <form id="reportForm">
+		<label for="title">Title</label>
+		<input type="text" id="title" name="title" placeholder="Example: Broken streetlight near park" required>
+        <label for="category">Category</label>
+        <select id="category" name="category" required>
+            <option value="">Select category</option>
+            <option value="TRASH">Trash</option>
+            <option value="POTHOLE">Pothole</option>
+            <option value="BROKEN_STREET_LIGHT">Broken Street Light</option>
+            <option value="HAZARD">Hazard</option>
+        </select>
 
-    <!-- Optional JavaScript for search/filter -->
-    <script>
-        const searchInput = document.getElementById('searchInput');
-        const tableBody = document.getElementById('reportTableBody');
+        <label for="description">Description</label>
+        <textarea id="description" name="description" placeholder="Describe the issue..." required></textarea>
 
-        searchInput.addEventListener('keyup', function () {
-            const filter = searchInput.value.toLowerCase();
-            const rows = tableBody.getElementsByTagName('tr');
-            for (let i = 0; i < rows.length; i++) {
-                const cells = rows[i].getElementsByTagName('td');
-                let match = false;
-                for (let j = 0; j < cells.length - 1; j++) { // ignore action buttons
-                    if (cells[j].textContent.toLowerCase().indexOf(filter) > -1) {
-                        match = true;
-                        break;
-                    }
-                }
-                rows[i].style.display = match ? '' : 'none';
+        <label for="location">Location</label>
+        <input type="text" id="location" name="location" placeholder="Example: Abu Dhabi, Khalifa City" required>
+
+        <label for="image">Upload Image</label>
+        <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp" required>
+
+        <img id="imagePreview" class="preview" alt="Image Preview">
+
+        <button type="submit">Submit Report</button>
+    </form>
+
+    <div id="messageBox" class="message"></div>
+</div>
+
+<script>
+    const reportForm = document.getElementById("reportForm");
+    const messageBox = document.getElementById("messageBox");
+    const imageInput = document.getElementById("image");
+    const imagePreview = document.getElementById("imagePreview");
+
+    imageInput.addEventListener("change", function () {
+        const file = imageInput.files[0];
+
+        if (!file) {
+            imagePreview.style.display = "none";
+            return;
+        }
+
+        const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+        if (!allowedTypes.includes(file.type)) {
+            showMessage("Only JPG, PNG, and WEBP images are allowed.", "error");
+            imageInput.value = "";
+            imagePreview.style.display = "none";
+            return;
+        }
+
+        imagePreview.src = URL.createObjectURL(file);
+        imagePreview.style.display = "block";
+    });
+
+    reportForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const formData = new FormData();
+		formData.append("title", document.getElementById("title").value);
+		formData.append("category", document.getElementById("category").value);
+		formData.append("description", document.getElementById("description").value);
+		formData.append("location", document.getElementById("location").value);
+		formData.append("image", document.getElementById("image").files[0]);
+        try {
+            const response = await fetch("/api/issues/submit", {
+                method: "POST",
+                credentials: "same-origin",
+                body: formData
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                showMessage("You must be signed in as a User to submit a report.", "error");
+                setTimeout(() => {
+                    window.location.href = "/oauth2/authorization/keycloak";
+                }, 1500);
+                return;
             }
-        });
-    </script>
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText);
+            }
+
+            const createdIssue = await response.json();
+
+            showMessage("Report submitted successfully. Image URL saved in database.", "success");
+
+            reportForm.reset();
+            imagePreview.style.display = "none";
+
+            console.log("Created issue:", createdIssue);
+
+        } catch (error) {
+            showMessage("Failed to submit report. " + error.message, "error");
+        }
+    });
+
+    function showMessage(message, type) {
+        messageBox.textContent = message;
+        messageBox.className = "message " + type;
+        messageBox.style.display = "block";
+    }
+</script>
 
 </body>
 </html>
